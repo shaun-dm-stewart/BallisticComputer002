@@ -1,3 +1,4 @@
+#define M_PI 3.1415926535897931
 #define __BCOMP_MAXRANGE__ 50001
 #define GRAVITY (-32.194)
 enum __DragFunctions { G1 = 1, G2, G3, G4, G5, G6, G7, G8 };
