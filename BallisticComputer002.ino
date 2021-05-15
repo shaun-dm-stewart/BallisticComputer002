@@ -26,76 +26,76 @@ void loop()
 }
 
 // Specialty angular conversion functions
-double DegtoMOA(double deg) {
+double degToMOA(double deg) {
 	return deg * 60;
 }
 
-double DegtoRad(double deg) {
+double degToRad(double deg) {
 	return deg*M_PI / 180;
 }
 
-double MOAtoDeg(double moa) {
+double moaToDeg(double moa) {
 	return moa / 60;
 }
 
-double MOAtoRad(double moa) {
+double moaToRad(double moa) {
 	return moa / 60 * M_PI / 180;
 }
 
-double RadtoDeg(double rad) {
+double radToDeg(double rad) {
 	return rad * 180 / M_PI;
 }
 
-double RadtoMOA(double rad) {
+double radToMOA(double rad) {
 	return rad * 60 * 180 / M_PI;
 }
 
-double calcFR(double Temperature, double Pressure, double RelativeHumidity) {
-	double VPw = 4e-6*pow(Temperature, 3) - 0.0004*pow(Temperature, 2) + 0.0234*Temperature - 0.2517;
-	double FRH = 0.995*(Pressure / (Pressure - (0.3783)*(RelativeHumidity)*VPw));
-	return FRH;
+double calcFR(double temperature, double pressure, double relativeHumidity) {
+	double vpw = 4e-6 * pow(temperature, 3) - 0.0004 * pow(temperature, 2) + 0.0234 * temperature - 0.2517;
+	double frH = 0.995*(pressure / (pressure - (0.3783)*(relativeHumidity) * vpw));
+	return frH;
 }
 
-double calcFP(double Pressure) {
-	double Pstd = 29.53; // in-hg
-	double FP = 0;
-	FP = (Pressure - Pstd) / (Pstd);
-	return FP;
+double calcFP(double pressure) {
+	double pstd = 29.53; // in-hg
+	double fp = 0;
+	fp = (pressure - pstd) / (pstd);
+	return fp;
 }
 
-double calcFT(double Temperature, double Altitude) {
-	double Tstd = -0.0036*Altitude + 59;
-	double FT = (Temperature - Tstd) / (459.6 + Tstd);
-	return FT;
+double calcFT(double temperature, double altitude) {
+	double tstd = -0.0036 * altitude + 59;
+	double ft = (temperature - tstd) / (459.6 + tstd);
+	return ft;
 }
 
-double calcFA(double Altitude) {
+double calcFA(double altitude) {
 	double fa = 0;
-	fa = -4e-15*pow(Altitude, 3) + 4e-10*pow(Altitude, 2) - 3e-5*Altitude + 1;
+	fa = -4e-15*pow(altitude, 3) + 4e-10 * pow(altitude, 2) - 3e-5 * altitude + 1;
 	return (1 / fa);
 }
 
-double AtmCorrect(double DragCoefficient, double Altitude, double Barometer, double Temperature, double RelativeHumidity) {
+double atmCorrect(double dragCoefficient, double altitude, double barometer, double temperature, double relativeHumidity) {
 
-	double FA = calcFA(Altitude);
-	double FT = calcFT(Temperature, Altitude);
-	double FR = calcFR(Temperature, Barometer, RelativeHumidity);
-	double FP = calcFP(Barometer);
+	double fs = calcFA(altitude);
+	double ft = calcFT(temperature, altitude);
+	double fr = calcFR(temperature, barometer, relativeHumidity);
+	double fp = calcFP(barometer);
 
 	// Calculate the atmospheric correction factor
-	double CD = (FA*(1 + FT - FP)*FR);
-	return DragCoefficient*CD;
+	double cd = (fs*(1 + ft - fp) * fr);
+	return dragCoefficient * cd;
 }
 
-double retard(int DragFunction, double DragCoefficient, double Velocity) {
+double retard(int dragFunction, double dragCoefficient, double velocity) {
 
 	//	printf("DF: %d, CD: %f, V: %f,);
 
-	double vp = Velocity;
+	double vp = velocity;
 	double val = -1;
 	double A = -1;
 	double M = -1;
-	switch (DragFunction) {
+	switch (dragFunction) {
 	case G1:
 		if (vp > 4230) { A = 1.477404177730177e-04; M = 1.9565; }
 		else if (vp> 3680) { A = 1.920339268755614e-04; M = 1.925; }
@@ -196,13 +196,13 @@ double retard(int DragFunction, double DragCoefficient, double Velocity) {
 	}
 
 	if (A != -1 && M != -1 && vp>0 && vp<10000) {
-		val = A*pow(vp, M) / DragCoefficient;
+		val = A*pow(vp, M) / dragCoefficient;
 		return val;
 	}
 	else return -1;
 }
 
-double GetRange(double* sln, int yardage) {
+double getRange(double* sln, int yardage) {
 	double size = sln[__BCOMP_MAXRANGE__ * 10 + 1];
 	if (yardage<size) {
 		return sln[10 * yardage];
@@ -210,7 +210,7 @@ double GetRange(double* sln, int yardage) {
 	else return 0;
 }
 
-double GetPath(double* sln, int yardage) {
+double getPath(double* sln, int yardage) {
 	double size = sln[__BCOMP_MAXRANGE__ * 10 + 1];
 	if (yardage<size) {
 		return sln[10 * yardage + 1];
@@ -218,7 +218,7 @@ double GetPath(double* sln, int yardage) {
 	else return 0;
 }
 
-double GetMOA(double* sln, int yardage) {
+double getMOA(double* sln, int yardage) {
 	double size = sln[__BCOMP_MAXRANGE__ * 10 + 1];
 	if (yardage<size) {
 		return sln[10 * yardage + 2];
@@ -226,7 +226,7 @@ double GetMOA(double* sln, int yardage) {
 	else return 0;
 }
 
-double GetTime(double* sln, int yardage) {
+double getTime(double* sln, int yardage) {
 	double size = sln[__BCOMP_MAXRANGE__ * 10 + 1];
 	if (yardage<size) {
 		return sln[10 * yardage + 3];
@@ -234,7 +234,7 @@ double GetTime(double* sln, int yardage) {
 	else return 0;
 }
 
-double GetWindage(double* sln, int yardage) {
+double getWindage(double* sln, int yardage) {
 	double size = sln[__BCOMP_MAXRANGE__ * 10 + 1];
 	if (yardage<size) {
 		return sln[10 * yardage + 4];
@@ -242,7 +242,7 @@ double GetWindage(double* sln, int yardage) {
 	else return 0;
 }
 
-double GetWindageMOA(double* sln, int yardage) {
+double getWindageMOA(double* sln, int yardage) {
 	double size = sln[__BCOMP_MAXRANGE__ * 10 + 1];
 	if (yardage<size) {
 		return sln[10 * yardage + 5];
@@ -250,7 +250,7 @@ double GetWindageMOA(double* sln, int yardage) {
 	else return 0;
 }
 
-double GetVelocity(double* sln, int yardage) {
+double getVelocity(double* sln, int yardage) {
 	double size = sln[__BCOMP_MAXRANGE__ * 10 + 1];
 	if (yardage<size) {
 		return sln[10 * yardage + 6];
@@ -258,7 +258,7 @@ double GetVelocity(double* sln, int yardage) {
 	else return 0;
 }
 
-double GetVx(double* sln, int yardage) {
+double getVx(double* sln, int yardage) {
 	double size = sln[__BCOMP_MAXRANGE__ * 10 + 1];
 	if (yardage<size) {
 		return sln[10 * yardage + 7];
@@ -266,7 +266,7 @@ double GetVx(double* sln, int yardage) {
 	else return 0;
 }
 
-double GetVy(double* sln, int yardage) {
+double getVy(double* sln, int yardage) {
 	double size = sln[__BCOMP_MAXRANGE__ * 10 + 1];
 	if (yardage<size) {
 		return sln[10 * yardage + 8];
@@ -274,12 +274,12 @@ double GetVy(double* sln, int yardage) {
 	else return 0;
 }
 
-double ZeroAngle(int DragFunction, double DragCoefficient, double Vi, double SightHeight, double ZeroRange, double yIntercept) {
+double zeroAngle(int dragFunction, double dragCoefficient, double vi, double sightHeight, double zeroRange, double yIntercept) {
 
 	// Numerical Integration variables
 	double t = 0;
-	double dt = 1 / Vi; // The solution accuracy generally doesn't suffer if its within a foot for each second of time.
-	double y = -SightHeight / 12;
+	double dt = 1 / vi; // The solution accuracy generally doesn't suffer if its within a foot for each second of time.
+	double y = -sightHeight / 12;
 	double x = 0;
 	double da; // The change in the bore angle used to iterate in on the correct zero angle.
 
@@ -294,7 +294,7 @@ double ZeroAngle(int DragFunction, double DragCoefficient, double Vi, double Sig
 	int quit = 0; // We know it's time to quit our successive approximation loop when this is 1.
 
 				  // Start with a very coarse angular change, to quickly solve even large launch angle problems.
-	da = DegtoRad(14);
+	da = degToRad(14);
 
 	// The general idea here is to start at 0 degrees elevation, and increase the elevation by 14 degrees
 	// until we are above the correct elevation.  Then reduce the angular change by half, and begin reducing
@@ -302,18 +302,18 @@ double ZeroAngle(int DragFunction, double DragCoefficient, double Vi, double Sig
 	// back up.  This allows for a fast successive approximation of the correct elevation, usually within less
 	// than 20 iterations.
 	for (angle = 0; quit == 0; angle = angle + da) {
-		vy = Vi*sin(angle);
-		vx = Vi*cos(angle);
-		Gx = GRAVITY*sin(angle);
-		Gy = GRAVITY*cos(angle);
+		vy = vi * sin(angle);
+		vx = vi * cos(angle);
+		Gx = GRAVITY * sin(angle);
+		Gy = GRAVITY * cos(angle);
 
-		for (t = 0, x = 0, y = -SightHeight / 12; x <= ZeroRange * 3; t = t + dt) {
+		for (t = 0, x = 0, y = -sightHeight / 12; x <= zeroRange * 3; t = t + dt) {
 			vy1 = vy;
 			vx1 = vx;
 			v = pow((pow(vx, 2) + pow(vy, 2)), 0.5);
 			dt = 1 / v;
 
-			dv = retard(DragFunction, DragCoefficient, v);
+			dv = retard(dragFunction, dragCoefficient, v);
 			dvy = -dv*vy / v*dt;
 			dvx = -dv*vx / v*dt;
 
@@ -328,7 +328,7 @@ double ZeroAngle(int DragFunction, double DragCoefficient, double Vi, double Sig
 			if (vy<0 && y<yIntercept) {
 				break;
 			}
-			if (vy>3 * vx) {
+			if (vy > 3 * vx) {
 				break;
 			}
 		}
@@ -341,32 +341,32 @@ double ZeroAngle(int DragFunction, double DragCoefficient, double Vi, double Sig
 			da = -da / 2;
 		}
 
-		if (fabs(da) < MOAtoRad(0.01)) quit = 1; // If our accuracy is sufficient, we can stop approximating.
-		if (angle > DegtoRad(45)) quit = 1; // If we exceed the 45 degree launch angle, then the projectile just won't get there, so we stop trying.
+		if (fabs(da) < moaToRad(0.01)) quit = 1; // If our accuracy is sufficient, we can stop approximating.
+		if (angle > degToRad(45)) quit = 1; // If we exceed the 45 degree launch angle, then the projectile just won't get there, so we stop trying.
 	}
-	return RadtoDeg(angle); // Convert to degrees for return value.
+	return radToDeg(angle); // Convert to degrees for return value.
 }
 
-int SolveAll(int DragFunction, double DragCoefficient, double Vi, double SightHeight, \
-	double ShootingAngle, double ZAngle, double WindSpeed, double WindAngle, double range) {
+int solveAll(int dragFunction, double dragCoefficient, double vi, double sightHeight, \
+	double shootingAngle, double zAngle, double windSpeed, double windAngle, double range) {
 
 	double t = 0;
-	double dt = 0.5 / Vi;
+	double dt = 0.5 / vi;
 	double v = 0;
 	double vx = 0, vx1 = 0, vy = 0, vy1 = 0;
 	double dv = 0, dvx = 0, dvy = 0;
 	double x = 0, y = 0;
 
-	double headwind = HeadWind(WindSpeed, WindAngle);
-	double crosswind = CrossWind(WindSpeed, WindAngle);
+	double headwind = headWind(windSpeed, windAngle);
+	double crosswind = crossWind(windSpeed, windAngle);
 
-	double Gy = GRAVITY*cos(DegtoRad((ShootingAngle + ZAngle)));
-	double Gx = GRAVITY*sin(DegtoRad((ShootingAngle + ZAngle)));
+	double gy = GRAVITY * cos(degToRad((shootingAngle + zAngle)));
+	double gx = GRAVITY * sin(degToRad((shootingAngle + zAngle)));
 
-	vx = Vi*cos(DegtoRad(ZAngle));
-	vy = Vi*sin(DegtoRad(ZAngle));
+	vx = vi * cos(degToRad(zAngle));
+	vy = vi * sin(degToRad(zAngle));
 
-	y = -SightHeight / 12;
+	y = -sightHeight / 12;
 
 	int n = 0;
 	for (t = 0;; t = t + dt) {
@@ -376,21 +376,21 @@ int SolveAll(int DragFunction, double DragCoefficient, double Vi, double SightHe
 		dt = 0.5 / v;
 
 		// Compute acceleration using the drag function retardation	
-		dv = retard(DragFunction, DragCoefficient, v + headwind);
-		dvx = -(vx / v)*dv;
-		dvy = -(vy / v)*dv;
+		dv = retard(dragFunction, dragCoefficient, v + headwind);
+		dvx = -(vx / v) * dv;
+		dvy = -(vy / v) * dv;
 
 		// Compute velocity, including the resolved gravity vectors.	
-		vx = vx + dt*dvx + dt*Gx;
-		vy = vy + dt*dvy + dt*Gy;
+		vx = vx + dt * dvx + dt * gx;
+		vy = vy + dt * dvy + dt * gy;
 
 		if (x / 3 >= range) {
 			range = x / 3;								// Range in yds
 			path = y * 12;								// Path in inches
-			elevationMOA = -RadtoMOA(atan(y / x));		// Correction in MOA
+			elevationMOA = -radToMOA(atan(y / x));		// Correction in MOA
 			flightTime = t + dt;						// Time in s
-			windage = Windage(crosswind, Vi, x, t + dt);// Windage in inches
-			windageMOA = RadtoMOA(atan(windage));		// Windage in MOA
+			windage = windageDelta(crosswind, vi, x, t + dt);// Windage in inches
+			windageMOA = radToMOA(atan(windage));		// Windage in MOA
 			velocityCombined = v;						// Velocity (combined)
 			velocityX = vx;								// Velocity (x)
 			velocityY = vy;								// Velocity (y)
@@ -407,19 +407,19 @@ int SolveAll(int DragFunction, double DragCoefficient, double Vi, double SightHe
 	return n;
 }
 
-double Windage(double WindSpeed, double Vi, double xx, double t) {
-	double Vw = WindSpeed*17.60; // Convert to inches per second.
-	return (Vw*(t - xx / Vi));
+double windageDelta(double windSpeed, double vi, double xx, double t) {
+	double vw = windSpeed * 17.60; // Convert to inches per second.
+	return (vw * (t - xx / vi));
 }
 
 // Headwind is positive at WindAngle=0
-double HeadWind(double WindSpeed, double WindAngle) {
-	double Wangle = DegtoRad(WindAngle);
-	return (cos(Wangle)*WindSpeed);
+double headWind(double windSpeed, double windAngle) {
+	double windageInRads = degToRad(windAngle);
+	return (cos(windageInRads)*windSpeed);
 }
 
 // Positive is from Shooter's Right to Left (Wind from 90 degree)
-double CrossWind(double WindSpeed, double WindAngle) {
-	double Wangle = DegtoRad(WindAngle);
-	return (sin(Wangle)*WindSpeed);
+double crossWind(double windSpeed, double windAngle) {
+	double windageInRads = degToRad(windAngle);
+	return (sin(windageInRads) * windSpeed);
 }

@@ -80,7 +80,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="__vm\.BacclisticComputer002.vsarduino.h" />
     <ClInclude Include="__vm\.BallisticComputer002.vsarduino.h" />
   </ItemGroup>
   <PropertyGroup>

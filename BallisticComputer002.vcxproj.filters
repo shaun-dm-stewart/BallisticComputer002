@@ -21,8 +21,5 @@
     <ClInclude Include="__vm\.BallisticComputer002.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="__vm\.BacclisticComputer002.vsarduino.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
