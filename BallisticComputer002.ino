@@ -1,6 +1,12 @@
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
 #define M_PI 3.1415926535897931
 #define __BCOMP_MAXRANGE__ 50001
 #define GRAVITY (-32.194)
+#define I2C_SDA 27
+#define I2C_SCL 26
+
+#define SEALEVELPRESSURE_HPA (1013.25)
 
 double range;			// Range in yds
 double path;			// Path in inches
@@ -11,18 +17,75 @@ double windageMOA;		// Windage in MOA
 double velocityCombined;//Velocity (combined)
 double velocityX;		// Velocity (x)
 double velocityY;		// Velocity (y)
+TwoWire I2CBME = TwoWire(0);
+Adafruit_BME280 bme;
 
 enum DragFunction { G1 = 1, G2, G3, G4, G5, G6, G7, G8 };
+
+unsigned long delayTime;
+
+/*
+* This application is urrently set up to interrogate a BME280 sensor and display the returned avalues to a serial monitor
+*/
 
 void setup()
 {
 	Serial.begin(115200);
+	Serial.println(F("BME280 test"));
+	I2CBME.begin(I2C_SDA, I2C_SCL, 100000);
+
+	bool status;
+
+	// default settings
+
+	status = bme.begin(0x76, &I2CBME); //0x76 is the default address of a BME280 sensor
+	if (!status) {
+		Serial.println("Could not find a valid BME280 sensor, check wiring!");
+		while (1);
+	}
+
+	Serial.println("-- Default Test --");
+	delayTime = 1000;
+
+	Serial.println();
 }
 
 void loop()
 {
-	Serial.println("Hello World!");
-	delay(1000);
+	readBaroSensor();
+	delay(delayTime);
+}
+
+
+void readBaroSensor() {
+
+	/*
+	* Ultimately this method wil populate a structure containing all the required environment data but for now
+	* it just pumps it to a serial port
+	*/
+
+	Serial.print("Temperature = ");
+	Serial.print(bme.readTemperature());
+	Serial.println(" *C");
+
+	// Convert temperature to Fahrenheit
+	/*Serial.print("Temperature = ");
+	Serial.print(1.8 * bme.readTemperature() + 32);
+	Serial.println(" *F");*/
+
+	Serial.print("Pressure = ");
+	Serial.print(bme.readPressure() / 100.0F);
+	Serial.println(" hPa");
+
+	Serial.print("Approx. Altitude = ");
+	Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
+	Serial.println(" m");
+
+	Serial.print("Humidity = ");
+	Serial.print(bme.readHumidity());
+	Serial.println(" %");
+
+	Serial.println();
 }
 
 // Specialty angular conversion functions
