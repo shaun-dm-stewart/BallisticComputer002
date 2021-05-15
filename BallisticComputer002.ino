@@ -1,7 +1,6 @@
 #define M_PI 3.1415926535897931
 #define __BCOMP_MAXRANGE__ 50001
 #define GRAVITY (-32.194)
-enum __DragFunctions { G1 = 1, G2, G3, G4, G5, G6, G7, G8 };
 
 double range;			// Range in yds
 double path;			// Path in inches
@@ -13,6 +12,7 @@ double velocityCombined;//Velocity (combined)
 double velocityX;		// Velocity (x)
 double velocityY;		// Velocity (y)
 
+enum DragFunction { G1 = 1, G2, G3, G4, G5, G6, G7, G8 };
 
 void setup()
 {
@@ -52,7 +52,7 @@ double radToMOA(double rad) {
 
 double calcFR(double temperature, double pressure, double relativeHumidity) {
 	double vpw = 4e-6 * pow(temperature, 3) - 0.0004 * pow(temperature, 2) + 0.0234 * temperature - 0.2517;
-	double frH = 0.995*(pressure / (pressure - (0.3783)*(relativeHumidity) * vpw));
+	double frH = 0.995 * (pressure / (pressure - (0.3783)*(relativeHumidity) * vpw));
 	return frH;
 }
 
@@ -87,7 +87,7 @@ double atmCorrect(double dragCoefficient, double altitude, double barometer, dou
 	return dragCoefficient * cd;
 }
 
-double retard(int dragFunction, double dragCoefficient, double velocity) {
+double retard(DragFunction dragFunction, double dragCoefficient, double velocity) {
 
 	//	printf("DF: %d, CD: %f, V: %f,);
 
@@ -274,7 +274,7 @@ double getVy(double* sln, int yardage) {
 	else return 0;
 }
 
-double zeroAngle(int dragFunction, double dragCoefficient, double vi, double sightHeight, double zeroRange, double yIntercept) {
+double zeroAngle(DragFunction dragFunction, double dragCoefficient, double vi, double sightHeight, double zeroRange, double yIntercept) {
 
 	// Numerical Integration variables
 	double t = 0;
@@ -347,7 +347,7 @@ double zeroAngle(int dragFunction, double dragCoefficient, double vi, double sig
 	return radToDeg(angle); // Convert to degrees for return value.
 }
 
-int solveAll(int dragFunction, double dragCoefficient, double vi, double sightHeight, \
+int solveAll(DragFunction dragFunction, double dragCoefficient, double vi, double sightHeight, \
 	double shootingAngle, double zAngle, double windSpeed, double windAngle, double range) {
 
 	double t = 0;
