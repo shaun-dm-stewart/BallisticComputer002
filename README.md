@@ -17,4 +17,6 @@ My current thoughts on a bill of materials are:<br>
 1 x MPU-6050              - 6 DOF gyro and compass<br>
 1 x WeatherFlow WINDMeter - Anemometer<br>
 1 x Buck converter        - To generate 5V for the Nextion<br>
-1 x SD data logger        - To record entered data
+1 x SD data logger        - To record entered data  
+
+## This is a Visual Micro solution
