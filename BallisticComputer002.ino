@@ -1,5 +1,7 @@
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
+#include <Wire.h>
+//#include <QMC5883LCompass.h>
+#include <BME280I2C.h>
+#include <TinyGPS.h>
 #define M_PI 3.1415926535897931
 #define __BCOMP_MAXRANGE__ 50001
 #define GRAVITY (-32.194)
@@ -17,8 +19,10 @@ double windageMOA;		// Windage in MOA
 double velocityCombined;//Velocity (combined)
 double velocityX;		// Velocity (x)
 double velocityY;		// Velocity (y)
-TwoWire I2CBME = TwoWire(0);
-Adafruit_BME280 bme;
+BME280I2C bme;			// Default : forced mode, standby time = 1000 ms
+						// Oversampling = pressure ×1, temperature ×1, humidity ×1, filter off,
+
+//QMC5883LCompass compass;
 
 enum DragFunction { G1 = 1, G2, G3, G4, G5, G6, G7, G8 };
 
@@ -31,18 +35,38 @@ unsigned long delayTime;
 void setup()
 {
 	Serial.begin(115200);
+	while (!Serial) {} // Wait
 	Serial.println(F("BME280 test"));
-	I2CBME.begin(I2C_SDA, I2C_SCL, 100000);
 
 	bool status;
 
-	// default settings
+#ifdef ESP32
+	Wire.begin(I2C_SDA, I2C_SCL);
+#else
+	Wire.begin();
+#endif
 
-	status = bme.begin(0x76, &I2CBME); //0x76 is the default address of a BME280 sensor
-	if (!status) {
-		Serial.println("Could not find a valid BME280 sensor, check wiring!");
-		while (1);
+	while (!bme.begin())
+	{
+		Serial.println("Could not find BME280 sensor!");
+		delay(1000);
 	}
+
+	switch (bme.chipModel())
+	{
+	case BME280::ChipModel_BME280:
+		Serial.println("Found BME280 sensor! Success.");
+		break;
+	case BME280::ChipModel_BMP280:
+		Serial.println("Found BMP280 sensor! No Humidity available.");
+		break;
+	default:
+		Serial.println("Found UNKNOWN sensor! Error!");
+	}
+
+	//Wire.begin();
+	// Initialize the Compass.
+	//compass.init();
 
 	Serial.println("-- Default Test --");
 	delayTime = 1000;
@@ -52,41 +76,52 @@ void setup()
 
 void loop()
 {
-	readBaroSensor();
-	delay(delayTime);
+	//readCompass();
+	printBME280Data(&Serial);
+	delay(500);
 }
 
+void printBME280Data(Stream* client)
+{
+	float temp(NAN), hum(NAN), pres(NAN);
 
-void readBaroSensor() {
+	BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
+	BME280::PresUnit presUnit(BME280::PresUnit_Pa);
 
-	/*
-	* Ultimately this method wil populate a structure containing all the required environment data but for now
-	* it just pumps it to a serial port
-	*/
+	bme.read(pres, temp, hum, tempUnit, presUnit);
 
-	Serial.print("Temperature = ");
-	Serial.print(bme.readTemperature());
-	Serial.println(" *C");
+	client->print("Temp: ");
+	client->print(temp);
+	client->print("°" + String(tempUnit == BME280::TempUnit_Celsius ? 'C' : 'F'));
+	client->print("\t\tHumidity: ");
+	client->print(hum);
+	client->print("% RH");
+	client->print("\t\tPressure: ");
+	client->print(pres);
+	client->println("Pa");
 
-	// Convert temperature to Fahrenheit
-	/*Serial.print("Temperature = ");
-	Serial.print(1.8 * bme.readTemperature() + 32);
-	Serial.println(" *F");*/
-
-	Serial.print("Pressure = ");
-	Serial.print(bme.readPressure() / 100.0F);
-	Serial.println(" hPa");
-
-	Serial.print("Approx. Altitude = ");
-	Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-	Serial.println(" m");
-
-	Serial.print("Humidity = ");
-	Serial.print(bme.readHumidity());
-	Serial.println(" %");
-
-	Serial.println();
+	delay(1000);
 }
+
+//void readCompass() {
+//	int x, y, z;
+//
+//	// Read compass values
+//	compass.read();
+//
+//	x = compass.getX();
+//	y = compass.getY();
+//	z = compass.getZ();
+//
+//	Serial.print("X: ");
+//	Serial.print(x);
+//	Serial.print("   Y: ");
+//	Serial.print(y);
+//	Serial.print("   Z: ");
+//	Serial.println(z);
+//
+//	delay(300);
+//}
 
 // Specialty angular conversion functions
 double degToMOA(double deg) {
